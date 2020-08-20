@@ -30,4 +30,5 @@ RUN chmod +x start.sh
 RUN chmod +x run-update.sh
 
 COPY update-display.py .
+COPY thread.py .
 CMD ["/bin/bash","start.sh"]
