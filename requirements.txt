@@ -9,4 +9,5 @@ font_source_sans_pro
 font_caladea
 font_roboto
 font_amatic_sc
-beacontools
+pybluez
+beacontools[scan]

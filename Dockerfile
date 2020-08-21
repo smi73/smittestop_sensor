@@ -18,6 +18,7 @@ RUN install_packages \
   libxcb1 \
   libfreetype6-dev \
   fonts-wqy-microhei \
+  bluetooth \
   python-dev \
   libbluetooth-dev \
   libcap2-bin
