@@ -31,4 +31,5 @@ RUN chmod +x run-update.sh
 
 COPY update-display.py .
 COPY thread.py .
+COPY smitte-stop-logo.bmp .
 CMD ["/bin/bash","start.sh"]
