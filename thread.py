@@ -130,6 +130,7 @@ class DrawProgram:
             self.epd.display(self.epd.getbuffer(self.time_image))
             self._count = self._count + 1
             if self._count == 50:
+                logging.info("Refresh Time: %s", myTime)
                 self.epd.init(self.epd.lut_full_update)
                 self.epd.Clear(0xFF)
                 self.epd.init(self.epd.lut_partial_update)
@@ -159,8 +160,6 @@ DrawThread.start()
 #Start Thread 
 #ExposureThread.start()
 
-
-print("Smitte-stop Tracer start: ")
 # Exit = False #Exit flag
 # while Exit==False:
 #  cycle = cycle + 0.1 
