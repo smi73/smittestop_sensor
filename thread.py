@@ -124,7 +124,7 @@ class DrawProgram:
             self.draw.rectangle((20, 80, 220, 105), fill = 255)
             myTime = time.strftime('%H:%M:%S')
             logging.info("Time: %s", myTime)
-            DevicesAndTime = " {}     {}      {}".format(get_nmb_of_close_devices(),  myTime, get_nmb_of_far_devices())  
+            DevicesAndTime = " {}     {}       {}".format(get_nmb_of_close_devices(),  myTime, get_nmb_of_far_devices())  
             self.draw.text((20, 50), "B", font = self.wifi, fill = 0)
             self.draw.text((195, 50), "2", font = self.wifi, fill = 0)
             self.draw.text((22, 80), DevicesAndTime, font = self.font24, fill = 0)
