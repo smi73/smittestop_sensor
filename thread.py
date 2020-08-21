@@ -104,7 +104,7 @@ class DrawProgram:
         self.epd.Clear(0xFF)
         self.epd.init(self.epd.lut_partial_update)
         self.font24 = ImageFont.truetype('/usr/share/fonts/truetype/wqy/wqy-microhei.ttc', 24)
-        self.wifi = ImageFont.truetype(' /usr/app/fonts/WIFI.ttf', 24)
+        self.wifi = ImageFont.truetype('/usr/app/fonts/WIFI.ttf', 24)
         self.time_image = Image.new('1', (lib.epd2in13_V1.EPD_HEIGHT, lib.epd2in13_V1.EPD_WIDTH), 255)
         
         bmp = Image.open('smitte-stop-logo.bmp')
