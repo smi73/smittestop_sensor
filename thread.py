@@ -99,12 +99,12 @@ class ExposureProgram:
 class DrawProgram:  
     def __init__(self):
         self._running = True
-        self.epd = epd2in13.EPD()
+        self.epd = lib.epd2in13_V1.EPD()
         self.epd.init(self.epd.lut_full_update)
         self.epd.Clear(0xFF)
         self.epd.init(self.epd.lut_partial_update)
         self.font24 = ImageFont.truetype('/usr/share/fonts/truetype/wqy/wqy-microhei.ttc', 24)
-        self.time_image = Image.new('1', (epd2in13.EPD_HEIGHT, epd2in13.EPD_WIDTH), 255)
+        self.time_image = Image.new('1', (lib.epd2in13_v1.EPD_HEIGHT, lib.epd2in13_V1.EPD_WIDTH), 255)
         
         bmp = Image.open('smitte-stop-logo.bmp')
         self.time_image.paste(bmp, (50,10))    
