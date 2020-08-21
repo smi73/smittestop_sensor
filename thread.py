@@ -104,6 +104,8 @@ class DrawProgram:
         self.epd.Clear(0xFF)
         self.epd.init(self.epd.lut_partial_update)
         self.font24 = ImageFont.truetype('/usr/share/fonts/truetype/wqy/wqy-microhei.ttc', 24)
+        self.wifi = ImageFont.truetype(' /usr/app/fonts/wifi.ttf', 24)
+        /usr/app/fonts/Grand9KPixel.ttf
         self.time_image = Image.new('1', (lib.epd2in13_V1.EPD_HEIGHT, lib.epd2in13_V1.EPD_WIDTH), 255)
         
         bmp = Image.open('smitte-stop-logo.bmp')
@@ -124,6 +126,7 @@ class DrawProgram:
             myTime = time.strftime('%H:%M:%S')
             logging.info("Time: %s", myTime)
             DevicesAndTime = "<-:{} ->:{} @{}".format(get_nmb_of_close_devices(), get_nmb_of_far_devices(), myTime)  
+            self.draw.text((20, 120), "B", font = self.wifi, fill = 0)
             self.draw.text((20, 80), DevicesAndTime, font = self.font24, fill = 0)
             self.newimage = self.time_image.crop([10, 10, 120, 50])
             self.time_image.paste(self.newimage, (10,10))  
