@@ -47,7 +47,7 @@ class EPD:
         
     FULL_UPDATE = 0
     PART_UPDATE = 1
-    lut_full_update= [
+    lut_full_update_new= [
         0x80,0x60,0x40,0x00,0x00,0x00,0x00,             #LUT0: BB:     VS 0 ~7
         0x10,0x60,0x20,0x00,0x00,0x00,0x00,             #LUT1: BW:     VS 0 ~7
         0x80,0x60,0x40,0x00,0x00,0x00,0x00,             #LUT2: WB:     VS 0 ~7
@@ -65,7 +65,7 @@ class EPD:
         0x15,0x41,0xA8,0x32,0x30,0x0A,
     ]
 
-    lut_partial_update = [ #20 bytes
+    lut_partial_update_new = [ #20 bytes
         0x00,0x00,0x00,0x00,0x00,0x00,0x00,             #LUT0: BB:     VS 0 ~7
         0x80,0x00,0x00,0x00,0x00,0x00,0x00,             #LUT1: BW:     VS 0 ~7
         0x40,0x00,0x00,0x00,0x00,0x00,0x00,             #LUT2: WB:     VS 0 ~7
@@ -82,36 +82,64 @@ class EPD:
 
         0x15,0x41,0xA8,0x32,0x30,0x0A,
     ]
+    lut_full_update = [
+        0x22, 0x55, 0xAA, 0x55, 0xAA, 0x55, 0xAA, 0x11,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x1E, 0x1E, 0x1E, 0x1E, 0x1E, 0x1E, 0x1E, 0x1E,
+        0x01, 0x00, 0x00, 0x00, 0x00, 0x00
+    ]
+
+    lut_partial_update  = [
+        0x18, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x0F, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+        0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+    ]
         
     # Hardware reset
     def reset(self):
         epdconfig.digital_write(self.reset_pin, 1)
         epdconfig.delay_ms(200) 
         epdconfig.digital_write(self.reset_pin, 0)
-        epdconfig.delay_ms(10)
+        epdconfig.delay_ms(200)
         epdconfig.digital_write(self.reset_pin, 1)
         epdconfig.delay_ms(200)   
 
-    def send_command(self, command):
+    def send_command_new(self, command):
         epdconfig.digital_write(self.dc_pin, 0)
         epdconfig.digital_write(self.cs_pin, 0)
         epdconfig.spi_writebyte([command])
         epdconfig.digital_write(self.cs_pin, 1)
+    
+    def send_command(self, command):
+        epdconfig.digital_write(self.dc_pin, 0)
+        epdconfig.spi_writebyte([command])
 
-    def send_data(self, data):
+    def send_data_new(self, data):
         epdconfig.digital_write(self.dc_pin, 1)
         epdconfig.digital_write(self.cs_pin, 0)
         epdconfig.spi_writebyte([data])
         epdconfig.digital_write(self.cs_pin, 1)
+    
+    def send_data(self, data):
+        epdconfig.digital_write(self.dc_pin, 1)
+        epdconfig.spi_writebyte([data])
         
     def ReadBusy(self):
         while(epdconfig.digital_read(self.busy_pin) == 1):      # 0: idle, 1: busy
             epdconfig.delay_ms(100)    
 
-    def TurnOnDisplay(self):
+    def TurnOnDisplay_new(self):
         self.send_command(0x22)
         self.send_data(0xC7)
         self.send_command(0x20)        
+        self.ReadBusy()
+    
+    def TurnOnDisplay(self):
+        self.send_command(0x22) # DISPLAY_UPDATE_CONTROL_2
+        self.send_data(0xC4)
+        self.send_command(0x20) # MASTER_ACTIVATION
+        self.send_command(0xFF) # TERMINATE_FRAME_READ_WRITE
         self.ReadBusy()
         
     def TurnOnDisplayPart(self):
@@ -120,7 +148,7 @@ class EPD:
         self.send_command(0x20)        
         self.ReadBusy()
         
-    def init(self, update):
+    def init_new(self, update):
         if (epdconfig.module_init() != 0):
             return -1
         # EPD hardware init start
@@ -208,6 +236,43 @@ class EPD:
 
             self.send_command(0x3C) #BorderWavefrom
             self.send_data(0x01)
+        return 0
+    
+    def init(self, lut):
+        if (epdconfig.module_init() != 0):
+            return -1
+        # EPD hardware init start
+        self.reset()
+        self.send_command(0x01) # DRIVER_OUTPUT_CONTROL
+        self.send_data((EPD_HEIGHT - 1) & 0xFF)
+        self.send_data(((EPD_HEIGHT - 1) >> 8) & 0xFF)
+        self.send_data(0x00) # GD = 0 SM = 0 TB = 0
+        
+        self.send_command(0x0C) # BOOSTER_SOFT_START_CONTROL
+        self.send_data(0xD7)
+        self.send_data(0xD6)
+        self.send_data(0x9D)
+        
+        self.send_command(0x2C) # WRITE_VCOM_REGISTER
+        self.send_data(0xA8) # VCOM 7C
+        
+        self.send_command(0x3A) # SET_DUMMY_LINE_PERIOD
+        self.send_data(0x1A) # 4 dummy lines per gate
+        
+        self.send_command(0x3B) # SET_GATE_TIME
+        self.send_data(0x08) # 2us per line
+        
+        self.send_command(0X3C) # BORDER_WAVEFORM_CONTROL
+        self.send_data(0x03)      
+        
+        self.send_command(0X11) # DATA_ENTRY_MODE_SETTING
+        self.send_data(0x03) # X increment; Y increment
+        
+        # WRITE_LUT_REGISTER
+        self.send_command(0x32)
+        for count in range(30):
+            self.send_data(lut[count])
+
         return 0
 
     def getbuffer(self, image):
