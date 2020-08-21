@@ -29,7 +29,7 @@
 #
 
 
-import epdconfig_v1
+import epdconfig_V1
 from PIL import Image
 import RPi.GPIO as GPIO
 # import numpy as np

@@ -1,7 +1,7 @@
 from threading import Thread
 from collections import defaultdict
 import time
-import epd2in13_V1
+import lib.epd2in13_V1
 from PIL import Image,ImageDraw,ImageFont
 import traceback
 import logging
