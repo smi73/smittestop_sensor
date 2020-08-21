@@ -152,13 +152,13 @@ DrawThread = Thread(target=Draw.run)
 DrawThread.start()
 
 #Create Class
-#Exposure = ExposureProgram()
+Exposure = ExposureProgram()
 
 #Create Thread
-#ExposureThread = Thread(target=Exposure.run) 
+ExposureThread = Thread(target=Exposure.run) 
 
 #Start Thread 
-#ExposureThread.start()
+ExposureThread.start()
 
 # Exit = False #Exit flag
 # while Exit==False:

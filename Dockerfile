@@ -17,7 +17,12 @@ RUN install_packages \
   libwebp6 \
   libxcb1 \
   libfreetype6-dev \
-  fonts-wqy-microhei
+  fonts-wqy-microhei \
+  python-dev \
+  libbluetooth-dev \
+  libcap2-bin
+
+CMD ["/sbin/setcap","'cap_net_raw,cap_net_admin+eip' $(readlink -f $(which python))"]
 
 COPY requirements.txt .
 RUN pip install -r requirements.txt
