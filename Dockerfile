@@ -17,7 +17,6 @@ RUN install_packages \
   libwebp6 \
   libxcb1 \
   libfreetype6-dev \
-  fonts-wqy-microhei \
   bluetooth \
   python-dev \
   libbluetooth-dev \

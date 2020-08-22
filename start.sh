@@ -1,7 +1,7 @@
 #!/bin/bash
 # Run the display update once on container start
 #python /usr/app/update-display.py
-python /usr/app/thread.py
+python /usr/app/smittestop.py
 
 # Save out the current env to a file so cron job can use it
 export -p > /usr/app/env.sh
