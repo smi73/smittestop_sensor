@@ -36,8 +36,5 @@ COPY bitmaps bitmaps
 RUN chmod +x start.sh
 RUN chmod +x run-update.sh
 
-COPY update-display.py .
-COPY thread.py .
 COPY smittestop.py .
-COPY smitte-stop-logo.bmp .
 CMD ["/bin/bash","start.sh"]
