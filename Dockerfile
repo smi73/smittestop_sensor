@@ -31,6 +31,7 @@ COPY start.sh .
 COPY run-update.sh .
 COPY lib lib
 COPY fonts fonts
+COPY bitmaps bitmaps
 
 RUN chmod +x start.sh
 RUN chmod +x run-update.sh
