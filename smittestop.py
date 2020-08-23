@@ -121,7 +121,7 @@ class Draw:
         while self._running:
             self.draw.rectangle((20, 80, 220, 105), fill = 255)
             myTime = time.strftime('%H:%M:%S')
-            logging.info("Time: %s", myTime)
+            #logging.info("Time: %s", myTime)
             DevicesAndTime = " {}     {}       {}".format(get_nmb_of_close_devices(),  myTime, get_nmb_of_far_devices())  
             self.draw.text((20, 50), "B", font = self.wifi, fill = 0)
             self.draw.text((195, 50), "2", font = self.wifi, fill = 0)
@@ -131,7 +131,7 @@ class Draw:
             self.epd.display(self.epd.getbuffer(self.time_image))
             self._count = self._count + 1
             if self._count == 50:
-                logging.info("Refresh Time: %s", myTime)
+                #logging.info("Refresh Time: %s", myTime)
                 self.epd.init(self.epd.lut_full_update)
                 self.epd.Clear(0xFF)
                 self.epd.init(self.epd.lut_partial_update)
