@@ -11,28 +11,32 @@ from beacontools import parse_packet
 
 global rssi_db
 global rssi_average_last_100_db
-rssi_db = defaultdict(list)
 global lastTimestamp_db
+
+rssi_db = defaultdict(list)
 lastTimestamp_db = {}
 rssi_average_last_100_db = {}
+
+local = False
 
 if "DEBUG" in os.environ:
     logging.basicConfig(level=logging.DEBUG)
 else:
     logging.basicConfig(level=logging.INFO)
 
+if local:
+    root_path = '/home/pi/projects/python/exposure'
+else:
+    root_path = '/usr/app/'
+
 
 def callback(bt_addr, rssi, packet, additional_info):
     #print("<%s, %d> %s %s" % (bt_addr, rssi, packet, additional_info))
     #print("<%d> %s" % (rssi, packet))
     rssi_db[packet.identifier].append(rssi)
-
     secondsSinceEpoch = time.time()
     lastTimestamp_db[packet.identifier] = secondsSinceEpoch
-
     rssi_average_last_100_db[packet.identifier] = calc_average_rssi(packet.identifier)
-
-
     oldKey = getKeyForFirstTimestampOlderThan5Sec()
     if oldKey is not None:
         deleteKeyInDbs(oldKey)
@@ -45,7 +49,6 @@ def calc_average_rssi(key):
     last_up_to_100_list = my_rssi[-100:]
     my_average = sum(last_up_to_100_list) / len(last_up_to_100_list) 
     return my_average
-
 
 def getKeyForFirstTimestampOlderThan5Sec():
     for x in lastTimestamp_db:
@@ -66,6 +69,7 @@ def get_average_rssi():
 
 def get_nmb_of_close_devices():
     j = rssi_average_last_100_db.values()
+    #logging.info("rssi_average_last_100_db: %s", j)
     j2 = [i for i in j if i >= -60.0]
     myLen = len(j2)
     return myLen
@@ -73,12 +77,11 @@ def get_nmb_of_close_devices():
 def get_nmb_of_far_devices():
     return get_number_of_devices() - get_nmb_of_close_devices()
 
-class ExposureProgram:  
+class Exposure:  
     def __init__(self):
         self._running = True
         # scan for all COVID-19 exposure notifications
         self.scanner = BeaconScanner(callback,packet_filter=[ExposureNotificationFrame])
-        
 
     def terminate(self):  
         self._running = False  
@@ -88,33 +91,28 @@ class ExposureProgram:
         self.scanner.start()
         while self._running:
             time.sleep(5) #Five second delay
-            
-            logging.info("Devices found: %s", get_number_of_devices())
-            logging.info("Average rssi: %s", get_average_rssi())
-            logging.info("Close rssi: %s", get_nmb_of_close_devices())
+            #logging.info("Devices found: %s", get_number_of_devices())
+            #logging.info("Average rssi: %s", get_average_rssi())
+            #logging.info("Close rssi: %s", get_nmb_of_close_devices())
 
-
-
-class DrawProgram:  
+class Draw:  
     def __init__(self):
         self._running = True
         self.epd = lib.epd2in13_V1.EPD()
         self.epd.init(self.epd.lut_full_update)
         self.epd.Clear(0xFF)
         self.epd.init(self.epd.lut_partial_update)
-        #self.font24 = ImageFont.truetype('/usr/share/fonts/truetype/wqy/wqy-microhei.ttc', 24)
-        self.font24 = ImageFont.truetype('/usr/app/fonts/wqy-microhei.ttc', 24)
-        self.wifi = ImageFont.truetype('/usr/app/fonts/WIFI.ttf', 28)
+        self.font24 = ImageFont.truetype(root_path + '/fonts/wqy-microhei.ttc', 24)
+        self.wifi = ImageFont.truetype(root_path +'/fonts/WIFI.ttf', 28)
         self.time_image = Image.new('1', (lib.epd2in13_V1.EPD_HEIGHT, lib.epd2in13_V1.EPD_WIDTH), 255)
         
-        bmp = Image.open('/usr/app/bitmaps/smitte-stop-logo.bmp')
+        bmp = Image.open(root_path + '/bitmaps/smitte-stop-logo.bmp')
         self.time_image.paste(bmp, (50,10))    
         self.epd.display(self.epd.getbuffer(self.time_image))
         time.sleep(2)
         self.draw = ImageDraw.Draw(self.time_image)
         self._count = 0
         
-
     def terminate(self):  
         self._running = False  
         self._count = 0
@@ -139,22 +137,17 @@ class DrawProgram:
                 self.epd.init(self.epd.lut_partial_update)
                 self._count = 0
             
-            
-
-                
-
-
 
 logging.info("Exposure Tracker:")
 #Create Class
-Draw = DrawProgram()
+Draw = Draw()
 #Create Thread
 DrawThread = Thread(target=Draw.run) 
 #Start Thread 
 DrawThread.start()
 
 #Create Class
-Exposure = ExposureProgram()
+Exposure = Exposure()
 
 #Create Thread
 ExposureThread = Thread(target=Exposure.run) 
