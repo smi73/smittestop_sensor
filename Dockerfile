@@ -1,13 +1,15 @@
 FROM balenalib/raspberry-pi-debian-python:3.7-buster-run
 
 # -- Start of wifi-connect section -- #
-RUN install_packages dnsmasq wireless-tools
+RUN install_packages dnsmasq wireless-tools wget
 WORKDIR /usr/src/app
 RUN curl -s https://api.github.com/repos/balena-io/wifi-connect/releases/latest \
   | grep browser_download_url \
   | grep rpi \
   | cut -d '"' -f 4 \
   | xargs -n1 curl -Ls | tar -xvz -C /usr/src/app/
+
+COPY . .
 # -- End of wifi-connect section -- #
 
 WORKDIR /usr/app

@@ -1,4 +1,5 @@
 from threading import Thread
+from flask import Flask
 from collections import defaultdict
 import time
 import lib.epd2in13_V1
@@ -8,6 +9,7 @@ import logging
 import os
 from beacontools import BeaconScanner, ExposureNotificationFrame
 from beacontools import parse_packet
+
 
 global rssi_db
 global rssi_average_last_100_db
@@ -138,20 +140,32 @@ class Draw:
                 self._count = 0
             
 
-logging.info("Exposure Tracker:")
-#Create Class
-Draw = Draw()
-#Create Thread
-DrawThread = Thread(target=Draw.run) 
-#Start Thread 
-DrawThread.start()
 
-#Create Class
-Exposure = Exposure()
+data = 'foo'
+app = Flask(__name__)
 
-#Create Thread
-ExposureThread = Thread(target=Exposure.run) 
+@app.route("/")
+def main():
+    return str(get_nmb_of_close_devices())
 
-#Start Thread 
-ExposureThread.start()
-
+if __name__ == "__main__":
+    logging.info("Exposure Tracker:")
+    #Create Class
+    Draw = Draw()
+    #Create Thread
+    DrawThread = Thread(target=Draw.run)
+    #Start Thread 
+    DrawThread.start()
+    
+    #Create Class
+    Exposure = Exposure()
+    
+    #Create Thread
+    ExposureThread = Thread(target=Exposure.run)
+    #Start Thread 
+    ExposureThread.start()
+    
+    #Create Thread
+    ServerThread = Thread(target=app.run(host='0.0.0.0', port=80))
+    #Start Thread 
+    ServerThread.start()

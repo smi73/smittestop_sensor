@@ -3,5 +3,6 @@ spidev
 RPi.GPIO
 Pillow
 inky
+Flask
 pybluez
 beacontools[scan]
