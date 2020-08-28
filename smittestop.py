@@ -1,5 +1,5 @@
 from threading import Thread
-from flask import Flask
+from flask import Flask, render_template
 from collections import defaultdict
 import time
 import lib.epd2in13_V1
@@ -146,7 +146,8 @@ app = Flask(__name__)
 
 @app.route("/")
 def main():
-    return str(get_nmb_of_close_devices())
+    return render_template('index.html', closenumber=str(get_nmb_of_close_devices()), farnumber=str(get_nmb_of_far_devices()))
+
 
 if __name__ == "__main__":
     logging.info("Exposure Tracker:")

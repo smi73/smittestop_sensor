@@ -42,6 +42,7 @@ COPY start.sh .
 COPY lib lib
 COPY fonts fonts
 COPY bitmaps bitmaps
+COPY templates templates
 
 RUN chmod +x start.sh
 
