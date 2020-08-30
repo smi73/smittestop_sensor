@@ -35,6 +35,7 @@ RUN install_packages \
 
 CMD ["/sbin/setcap","'cap_net_raw,cap_net_admin+eip' $(readlink -f $(which python))"]
 
+
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
@@ -43,6 +44,7 @@ COPY lib lib
 COPY fonts fonts
 COPY bitmaps bitmaps
 COPY templates templates
+COPY static static
 
 RUN chmod +x start.sh
 

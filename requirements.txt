@@ -4,5 +4,6 @@ RPi.GPIO
 Pillow
 inky
 Flask
+bluepy
 pybluez
 beacontools[scan]
