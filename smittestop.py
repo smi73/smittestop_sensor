@@ -1,15 +1,15 @@
 from threading import Thread
-from flask import Flask, render_template, url_for
+from flask import Flask, render_template, url_for, Response
 from collections import defaultdict
 import time
-#import lib.epd2in13
 import lib.en_rx_service
-#import lib.fingerprint
-
-#from PIL import Image,ImageDraw,ImageFont
 import traceback
 import logging
 import os
+import json
+import requests
+
+
 #from beacontools import BeaconScanner, ExposureNotificationFrame
 #from beacontools import parse_packet
 
@@ -24,7 +24,7 @@ rssi_db = defaultdict(list)
 lastTimestamp_db = {}
 rssi_average_last_100_db = {}
 
-local = True
+local = False
 
 if "DEBUG" in os.environ:
     logging.basicConfig(level=logging.DEBUG)
@@ -90,6 +90,11 @@ def get_nmb_of_close_devices():
 def get_nmb_of_far_devices():
     return get_number_of_devices() - get_nmb_of_close_devices()
 
+def get_data():
+    r = requests.get('https://api.github.com/events')
+    logging.info("requests: %s", r.text)
+
+
 class Exposure:  
     def __init__(self):
         self._running = True
@@ -124,64 +129,9 @@ class Exposure:
             #logging.info("Average rssi: %s", get_average_rssi())
             logging.info("Number of close devices: %s", get_nmb_of_close_devices())
             logging.info("Number of far devices: %s", get_nmb_of_far_devices())
-            logging.info("Devices: %s", get_devices())
-            logging.info("Join data: %s", join_data())
-
-class Draw:  
-    def __init__(self):
-        logging.info("Draw init:")
-        self._running = True
-        self.epd = lib.epd2in13.EPD()
-        self.epd.init(self.epd.lut_full_update)
-        self.epd.Clear(0xFF)
-        self.epd.init(self.epd.lut_partial_update)
-        self.font24 = ImageFont.truetype(root_path + '/fonts/wqy-microhei.ttc', 24)
-        self.wifi = ImageFont.truetype(root_path +'/fonts/WIFI.ttf', 28)
-        self.time_image = Image.new('1', (lib.epd2in13.EPD_HEIGHT, lib.epd2in13.EPD_WIDTH), 255)
-        
-        bmp = Image.open(root_path + '/bitmaps/smitte-stop-logo_epaper.bmp')
-        self.time_image.paste(bmp, (50,10))    
-        self.epd.display(self.epd.getbuffer(self.time_image))
-        time.sleep(2)
-        self.draw = ImageDraw.Draw(self.time_image)
-        self._count = 0
-        
-    def terminate(self):  
-        self._running = False  
-        self._count = 0
-
-    def run(self):        
-        while self._running:
-            #logging.info("Draw run:")
-            self.draw.rectangle((20, 80, 220, 105), fill = 255)
-            myTime = time.strftime('%H:%M:%S')
-            #logging.info("Time: %s", myTime)
-            DevicesAndTime = " {}     {}       {}".format(get_nmb_of_close_devices(),  myTime, get_nmb_of_far_devices())  
-            logging.info("Text: %s", DevicesAndTime)
-            self.draw.text((20, 50), "B", font = self.wifi, fill = 0)
-            self.draw.text((195, 50), "2", font = self.wifi, fill = 0)
-            self.draw.text((22, 80), DevicesAndTime, font = self.font24, fill = 0)
-            self.newimage = self.time_image.crop([10, 10, 120, 50])
-            self.time_image.paste(self.newimage, (10,10))  
-            self.epd.display(self.epd.getbuffer(self.time_image))
-            self._count = self._count + 1
-            if self._count == 50:
-                #logging.info("Refresh Time: %s", myTime)
-                self.epd.init(self.epd.lut_full_update)
-                self.epd.Clear(0xFF)
-                self.epd.init(self.epd.lut_partial_update)
-                self._count = 0
-            if self._count == 10:
-                self.epd.Dev_exit()
-                time.sleep(2)
-                self.epd.init(self.epd.lut_full_update)
-                self.epd.Clear(0xFF)
-                time.sleep(2)
-
-
-            
-
-
+            #logging.info("Devices: %s", get_local_devices())
+            #logging.info("Join data: %s", join_data())
+            #get_data()
 
 app = Flask(__name__)
 
@@ -198,22 +148,16 @@ def main():
 
 @app.route("/localdevices")
 def local_devices():
-    myLocal = str(get_local_devices())
-    return myLocal
-
+    #myLocal = str(get_local_devices())
+    return get_local_devices()
 
 if __name__ == "__main__":
+
     logging.info("Exposure Tracker:")
-    #Create Class
-    
-    #Draw = Draw()
-    
-    #Create Thread
-    
-    #DrawThread = Thread(target=Draw.run)
-    #Start Thread 
-    #DrawThread.start()
-    
+    if "SENSORS" in os.environ:
+        sensors_selected = os.environ["SENSORS"]
+        logging.info("Sensors: %s", sensors_selected)
+
     #Create Class
     Exposure = Exposure()
     
