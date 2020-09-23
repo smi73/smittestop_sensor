@@ -70,4 +70,16 @@ def module_init():
     SPI.mode = 0b00
     return 0;
 
+def module_exit():
+    #logging.debug("spi end")
+    SPI.close()
+
+    #logging.debug("close 5V, Module enters 0 power consumption ...")
+    GPIO.output(RST_PIN, 0)
+    GPIO.output(DC_PIN, 0)
+
+    GPIO.cleanup()
+    
+
 ### END OF FILE ###
+

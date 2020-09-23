@@ -2,15 +2,16 @@ from threading import Thread
 from flask import Flask, render_template, url_for
 from collections import defaultdict
 import time
-import lib.epd2in13_V1
+#import lib.epd2in13
 import lib.en_rx_service
+#import lib.fingerprint
 
-from PIL import Image,ImageDraw,ImageFont
+#from PIL import Image,ImageDraw,ImageFont
 import traceback
 import logging
 import os
-from beacontools import BeaconScanner, ExposureNotificationFrame
-from beacontools import parse_packet
+#from beacontools import BeaconScanner, ExposureNotificationFrame
+#from beacontools import parse_packet
 
 
 
@@ -23,7 +24,7 @@ rssi_db = defaultdict(list)
 lastTimestamp_db = {}
 rssi_average_last_100_db = {}
 
-local = False
+local = True
 
 if "DEBUG" in os.environ:
     logging.basicConfig(level=logging.DEBUG)
@@ -35,6 +36,9 @@ if local:
 else:
     root_path = '/usr/app/'
 
+def join_data():
+    test = {b'9oi\tC\xd3\x12&j\x8b\xb7\xf6Yw\xedH': [-78, -89], b'\x86\xba\x1fl#\xb3\xe42\x87<d\xac2\xc0\x12\xcc': [-68], b'\x15\xad\x9f\x1a\x8dp\x1a\x9fb\x8a:5\x1b\xd2H\x15': [-72]}
+    return test.keys()
 
 def callback(bt_addr, rssi, packet, additional_info):
     #print("<%s, %d> %s %s" % (bt_addr, rssi, packet, additional_info))
@@ -49,6 +53,9 @@ def callback(bt_addr, rssi, packet, additional_info):
 
 def get_number_of_devices():
     return len(rssi_db)
+
+def get_local_devices():
+    return rssi_db.keys()
 
 def calc_average_rssi(key):
     my_rssi = rssi_db[key]
@@ -99,7 +106,10 @@ class Exposure:
         while self._running:
             time.sleep(5) #Five second delay
             #logging.info("Scan test:")
+            #lib.fingerprint.scan()
+            
             scan_result = self.exp.scan(t=2)
+            
             for beacon in scan_result:
                 #logging.info("Scan result rpi : %s", beacon.rpi)
                 #logging.info("Scan result rssi : %s", beacon.rssi)
@@ -110,20 +120,24 @@ class Exposure:
                 oldKey = getKeyForFirstTimestampOlderThan5Sec()
                 if oldKey is not None:
                     deleteKeyInDbs(oldKey)
-
+ 
             #logging.info("Average rssi: %s", get_average_rssi())
-            #logging.info("Close rssi: %s", get_nmb_of_close_devices())
+            logging.info("Number of close devices: %s", get_nmb_of_close_devices())
+            logging.info("Number of far devices: %s", get_nmb_of_far_devices())
+            logging.info("Devices: %s", get_devices())
+            logging.info("Join data: %s", join_data())
 
 class Draw:  
     def __init__(self):
+        logging.info("Draw init:")
         self._running = True
-        self.epd = lib.epd2in13_V1.EPD()
+        self.epd = lib.epd2in13.EPD()
         self.epd.init(self.epd.lut_full_update)
         self.epd.Clear(0xFF)
         self.epd.init(self.epd.lut_partial_update)
         self.font24 = ImageFont.truetype(root_path + '/fonts/wqy-microhei.ttc', 24)
         self.wifi = ImageFont.truetype(root_path +'/fonts/WIFI.ttf', 28)
-        self.time_image = Image.new('1', (lib.epd2in13_V1.EPD_HEIGHT, lib.epd2in13_V1.EPD_WIDTH), 255)
+        self.time_image = Image.new('1', (lib.epd2in13.EPD_HEIGHT, lib.epd2in13.EPD_WIDTH), 255)
         
         bmp = Image.open(root_path + '/bitmaps/smitte-stop-logo_epaper.bmp')
         self.time_image.paste(bmp, (50,10))    
@@ -138,11 +152,12 @@ class Draw:
 
     def run(self):        
         while self._running:
+            #logging.info("Draw run:")
             self.draw.rectangle((20, 80, 220, 105), fill = 255)
             myTime = time.strftime('%H:%M:%S')
             #logging.info("Time: %s", myTime)
             DevicesAndTime = " {}     {}       {}".format(get_nmb_of_close_devices(),  myTime, get_nmb_of_far_devices())  
-            #logging.info("Text: %s", DevicesAndTime)
+            logging.info("Text: %s", DevicesAndTime)
             self.draw.text((20, 50), "B", font = self.wifi, fill = 0)
             self.draw.text((195, 50), "2", font = self.wifi, fill = 0)
             self.draw.text((22, 80), DevicesAndTime, font = self.font24, fill = 0)
@@ -156,6 +171,14 @@ class Draw:
                 self.epd.Clear(0xFF)
                 self.epd.init(self.epd.lut_partial_update)
                 self._count = 0
+            if self._count == 10:
+                self.epd.Dev_exit()
+                time.sleep(2)
+                self.epd.init(self.epd.lut_full_update)
+                self.epd.Clear(0xFF)
+                time.sleep(2)
+
+
             
 
 
@@ -173,15 +196,23 @@ def main():
     logging.info("File: %s", image_file)
     return render_template('index.html', image_file=image_file, totalnumber=total_nmb,closenumber=close_nmb, farnumber=far_nmb)
 
+@app.route("/localdevices")
+def local_devices():
+    myLocal = str(get_local_devices())
+    return myLocal
+
 
 if __name__ == "__main__":
     logging.info("Exposure Tracker:")
     #Create Class
-    Draw = Draw()
+    
+    #Draw = Draw()
+    
     #Create Thread
-    DrawThread = Thread(target=Draw.run)
+    
+    #DrawThread = Thread(target=Draw.run)
     #Start Thread 
-    DrawThread.start()
+    #DrawThread.start()
     
     #Create Class
     Exposure = Exposure()
